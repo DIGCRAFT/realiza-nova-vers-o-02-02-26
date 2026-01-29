@@ -242,6 +242,34 @@ export default function LandingPage4Us() {
         </div>
       </section>
 
+      {/* Seletor de Cores */}
+      <section className="py-20 bg-white border-t border-border">
+        <div className="container">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mb-4 text-center">Escolha a Cor Perfeita para Sua Obra</h2>
+            <p className="text-muted-foreground text-lg text-center mb-12">
+              Visualize como a Linha Perfetta ficará em seu projeto com nossas cores amadeirado premium e acabamentos sólidos.
+            </p>
+            <ColorSelector
+              productLine={PRODUCT_LINES.perfetta}
+              selectedColor={selectedColor}
+              onColorSelect={setSelectedColor}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Bônus Exclusivo */}
+      <section className="py-20 bg-gradient-to-b from-muted/50 to-white">
+        <div className="container">
+          <ExclusiveBonus
+            title="Bônus Exclusivo: 7 Erros Fatais em Esquadrias"
+            onDownload={() => {
+              toast.success("Guia enviado para seu e-mail!");
+            }}
+          />
+        </div>
+      </section>
       {/* Oferta Irresistível (Formulário) */}
       <section id="oferta-exclusiva" className="py-24 bg-gradient-to-b from-white to-muted/50">
         <div className="container max-w-5xl">
