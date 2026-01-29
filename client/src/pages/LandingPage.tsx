@@ -13,6 +13,7 @@ import ExitIntentPopup from "@/components/ExitIntentPopup";
 import ColorSelector from "@/components/ColorSelector";
 import ExclusiveBonus from "@/components/ExclusiveBonus";
 import { PRODUCT_LINES } from "@/lib/colors";
+import { WoodColor } from "@/types/products";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nome é obrigatório"),
@@ -25,7 +26,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function LandingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedColor, setSelectedColor] = useState();
+  const [selectedColor, setSelectedColor] = useState<WoodColor | undefined>(undefined);
   const [, setLocation] = useLocation();
   
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({

@@ -12,7 +12,7 @@ export default defineConfig({
   plugins,
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client/src"),
+      "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
@@ -31,11 +31,8 @@ export default defineConfig({
       ".manuspre.computer",
       ".manus.computer",
       ".manus-asia.computer",
-      ".manus-computer.ai",
       ".manuscomputer.ai",
       ".manusvm.computer",
-      ".us1.manus.computer",
-      ".us2.manus.computer",
       "localhost",
       "127.0.0.1",
     ],

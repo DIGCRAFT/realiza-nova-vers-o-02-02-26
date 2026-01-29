@@ -99,10 +99,7 @@ Clique no link para responder: https://wa.me/seu-numero
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <WhatsAppButton
-        source="Página de Orçamento"
-        message="Olá! Gostaria de solicitar um orçamento para esquadrias de alumínio."
-      />
+      <WhatsAppButton />
 
       {/* Header */}
       <header className="border-b border-slate-200 bg-white py-6 sticky top-0 z-40">
