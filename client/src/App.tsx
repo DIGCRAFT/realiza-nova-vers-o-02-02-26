@@ -13,7 +13,7 @@ import LandingPage4Us from "./pages/LandingPage4Us";
 import ThankYou from "./pages/ThankYou";
 import Guide from "./pages/Guide";
 import GuidePerffeta from "./pages/GuidePerffeta";
-import BudgetPage from "./pages/BudgetPage";
+import OrcamentoInterativo from "./pages/OrcamentoInterativo";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -23,7 +23,7 @@ function Router() {
       {/* Rotas Standalone (sem Layout padrão) */}
       <Route path="/landing" component={LandingPage} />
       <Route path="/lp-4us" component={LandingPage4Us} />
-      <Route path="/orcamento" component={BudgetPage} />
+      <Route path="/orcamento" component={OrcamentoInterativo} />
       <Route path="/obrigado" component={ThankYou} />
       
       {/* Rotas com Layout */}

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck, Upload, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,19 +10,27 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ColorSelector from "@/components/ColorSelector";
+import ColorVisualizer from "@/components/ColorVisualizer";
 import { ProductLineConfig, WoodColor } from "@/types/products";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nome é obrigatório"),
   email: z.string().email("E-mail inválido"),
   phone: z.string().min(10, "Telefone inválido"),
+  cep: z.string().min(8, "CEP inválido"),
+  rua: z.string().min(3, "Rua é obrigatória"),
+  numero: z.string().min(1, "Número é obrigatório"),
+  complemento: z.string().optional(),
+  bairro: z.string().min(2, "Bairro é obrigatório"),
+  cidade: z.string().min(2, "Cidade é obrigatória"),
+  estado: z.string().min(2, "Estado é obrigatório"),
   productLine: z.string().min(1, "Selecione uma linha"),
   color: z.string().min(1, "Selecione uma cor"),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-// Configurações das linhas de produtos
+// Configurações das linhas de produtos - ATUALIZADAS
 const productConfigs: Record<string, ProductLineConfig> = {
   perfetta: {
     id: "perfetta",
@@ -30,59 +38,129 @@ const productConfigs: Record<string, ProductLineConfig> = {
     displayName: "Linha Perfetta™",
     description: "Design minimalista invisível, isolamento acústico absoluto e vedação hermética.",
     colors: [
-      { id: "1", name: "Madeira Clara", hexCode: "#D4A574", category: "wood" },
-      { id: "2", name: "Madeira Média", hexCode: "#8B6F47", category: "wood" },
-      { id: "3", name: "Madeira Escura", hexCode: "#5C4033", category: "wood" },
+      { id: "1", name: "Carvalho Escuro", hexCode: "#5C4033", category: "wood" },
+      { id: "2", name: "Nogueira", hexCode: "#6B4423", category: "wood" },
+      { id: "3", name: "Teca", hexCode: "#8B6F47", category: "wood" },
+      { id: "4", name: "Jatobá", hexCode: "#9B7653", category: "wood" },
+      { id: "5", name: "Ipê", hexCode: "#A0826D", category: "wood" },
+      { id: "6", name: "Cerejeira", hexCode: "#B87A5A", category: "wood" },
     ],
     solidColors: [
-      { id: "4", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
-      { id: "5", name: "Preto", hexCode: "#000000", category: "solid" },
-      { id: "6", name: "Alumínio", hexCode: "#C0C0C0", category: "solid" },
+      { id: "7", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
+      { id: "8", name: "Preto", hexCode: "#1A1A1A", category: "solid" },
+      { id: "9", name: "Alumínio", hexCode: "#C0C0C0", category: "solid" },
     ],
   },
-  acm: {
-    id: "acm",
-    name: "ACM",
-    displayName: "Linha ACM",
-    description: "Revestimento premium para fachadas com durabilidade de 20+ anos.",
+  gold: {
+    id: "gold",
+    name: "Gold",
+    displayName: "Linha Gold",
+    description: "Qualidade superior com excelente custo-benefício. Ideal para projetos residenciais e comerciais.",
     colors: [
-      { id: "7", name: "Madeira Clara", hexCode: "#D4A574", category: "wood" },
-      { id: "8", name: "Madeira Média", hexCode: "#8B6F47", category: "wood" },
+      { id: "10", name: "Carvalho Escuro", hexCode: "#5C4033", category: "wood" },
+      { id: "11", name: "Nogueira", hexCode: "#6B4423", category: "wood" },
+      { id: "12", name: "Teca", hexCode: "#8B6F47", category: "wood" },
+      { id: "13", name: "Jatobá", hexCode: "#9B7653", category: "wood" },
     ],
     solidColors: [
-      { id: "9", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
-      { id: "10", name: "Preto", hexCode: "#000000", category: "solid" },
+      { id: "14", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
+      { id: "15", name: "Preto", hexCode: "#1A1A1A", category: "solid" },
+      { id: "16", name: "Alumínio", hexCode: "#C0C0C0", category: "solid" },
     ],
   },
-  aluminio: {
-    id: "aluminio",
-    name: "Alumínio",
-    displayName: "Linha Alumínio",
-    description: "Esquadrias resistentes e econômicas com baixa manutenção.",
+  portas: {
+    id: "portas",
+    name: "Portas de Entrada",
+    displayName: "Portas de Entrada",
+    description: "Portas pivotantes e de entrada em alumínio de alto padrão. Imponência e segurança.",
     colors: [
-      { id: "11", name: "Madeira Clara", hexCode: "#D4A574", category: "wood" },
+      { id: "17", name: "Carvalho Escuro", hexCode: "#5C4033", category: "wood" },
+      { id: "18", name: "Nogueira", hexCode: "#6B4423", category: "wood" },
+      { id: "19", name: "Teca", hexCode: "#8B6F47", category: "wood" },
+      { id: "20", name: "Jatobá", hexCode: "#9B7653", category: "wood" },
+      { id: "21", name: "Ipê", hexCode: "#A0826D", category: "wood" },
     ],
     solidColors: [
-      { id: "12", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
-      { id: "13", name: "Preto", hexCode: "#000000", category: "solid" },
-      { id: "14", name: "Alumínio", hexCode: "#C0C0C0", category: "solid" },
+      { id: "22", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
+      { id: "23", name: "Preto", hexCode: "#1A1A1A", category: "solid" },
+      { id: "24", name: "Bronze", hexCode: "#8B6914", category: "solid" },
+    ],
+  },
+  brise: {
+    id: "brise",
+    name: "Brise/Painéis",
+    displayName: "Brise/Painéis",
+    description: "Brises e painéis decorativos em alumínio. Estética e funcionalidade para fachadas modernas.",
+    colors: [
+      { id: "25", name: "Carvalho Escuro", hexCode: "#5C4033", category: "wood" },
+      { id: "26", name: "Nogueira", hexCode: "#6B4423", category: "wood" },
+      { id: "27", name: "Teca", hexCode: "#8B6F47", category: "wood" },
+      { id: "28", name: "Ipê", hexCode: "#A0826D", category: "wood" },
+    ],
+    solidColors: [
+      { id: "29", name: "Branco", hexCode: "#FFFFFF", category: "solid" },
+      { id: "30", name: "Preto", hexCode: "#1A1A1A", category: "solid" },
+      { id: "31", name: "Alumínio", hexCode: "#C0C0C0", category: "solid" },
+      { id: "32", name: "Bronze", hexCode: "#8B6914", category: "solid" },
     ],
   },
 };
 
 export default function OrcamentoInterativo() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedLine, setSelectedLine] = useState<"perfetta" | "acm" | "aluminio">("perfetta");
+  const [selectedLine, setSelectedLine] = useState<"perfetta" | "gold" | "portas" | "brise">("perfetta");
   const [selectedColor, setSelectedColor] = useState<WoodColor | undefined>(undefined);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isLoadingCep, setIsLoadingCep] = useState(false);
   const [, setLocation] = useLocation();
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       productLine: "perfetta",
       color: "",
+      cep: "",
+      rua: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
     }
   });
+
+  const cepValue = watch("cep");
+
+  // Buscar endereço pelo CEP
+  useEffect(() => {
+    const fetchAddress = async () => {
+      const cleanCep = cepValue?.replace(/\D/g, "");
+      if (cleanCep?.length === 8) {
+        setIsLoadingCep(true);
+        try {
+          const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+          const data = await response.json();
+          
+          if (!data.erro) {
+            setValue("rua", data.logradouro || "");
+            setValue("bairro", data.bairro || "");
+            setValue("cidade", data.localidade || "");
+            setValue("estado", data.uf || "");
+            toast.success("Endereço encontrado!");
+          } else {
+            toast.error("CEP não encontrado");
+          }
+        } catch (error) {
+          toast.error("Erro ao buscar CEP");
+        } finally {
+          setIsLoadingCep(false);
+        }
+      }
+    };
+
+    const timer = setTimeout(fetchAddress, 500);
+    return () => clearTimeout(timer);
+  }, [cepValue, setValue]);
 
   const lineColors: Record<string, { name: string; description: string; badge: string; badgeColor: string }> = {
     perfetta: {
@@ -91,23 +169,53 @@ export default function OrcamentoInterativo() {
       badge: "Premium",
       badgeColor: "bg-primary"
     },
-    acm: {
-      name: "Linha ACM",
-      description: "Revestimento premium para fachadas com durabilidade de 20+ anos.",
-      badge: "Fachada",
+    gold: {
+      name: "Linha Gold",
+      description: "Qualidade superior com excelente custo-benefício para projetos residenciais.",
+      badge: "Intermediária",
       badgeColor: "bg-amber-600"
     },
-    aluminio: {
-      name: "Linha Alumínio",
-      description: "Esquadrias resistentes e econômicas com baixa manutenção.",
-      badge: "Padrão",
-      badgeColor: "bg-orange-600"
+    portas: {
+      name: "Portas de Entrada",
+      description: "Portas pivotantes e de entrada em alumínio de alto padrão.",
+      badge: "Especial",
+      badgeColor: "bg-blue-600"
+    },
+    brise: {
+      name: "Brise/Painéis",
+      description: "Brises e painéis decorativos para fachadas modernas.",
+      badge: "Decorativo",
+      badgeColor: "bg-green-600"
     }
   };
 
   const handleColorSelect = (color: WoodColor) => {
     setSelectedColor(color);
     setValue("color", color.name);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => {
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'application/zip'];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      
+      if (!validTypes.includes(file.type)) {
+        toast.error(`${file.name}: Tipo de arquivo não suportado`);
+        return false;
+      }
+      if (file.size > maxSize) {
+        toast.error(`${file.name}: Arquivo muito grande (máx 10MB)`);
+        return false;
+      }
+      return true;
+    });
+
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (data: FormData) => {
@@ -120,12 +228,12 @@ export default function OrcamentoInterativo() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     const lineInfo = lineColors[selectedLine];
-    const message = `Olá! Gostaria de um orçamento para a Linha ${lineInfo.name} na cor ${selectedColor.name}. Meu nome é ${data.name}, e-mail ${data.email} e telefone ${data.phone}.`;
     
     console.log({
       ...data,
       selectedLine,
-      selectedColor
+      selectedColor,
+      uploadedFiles: uploadedFiles.map(f => f.name)
     });
     
     toast.success("Solicitação recebida! Entraremos em contato em breve.");
@@ -154,10 +262,10 @@ export default function OrcamentoInterativo() {
           {/* Title */}
           <div className="text-center mb-12">
             <h1 className="font-display font-bold text-4xl md:text-5xl mb-4 text-primary">
-              Seu Orçamento Personalizado
+              Crie Seu Orçamento Personalizado
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Escolha a linha de produtos e a cor que melhor se adequa ao seu projeto
+              Escolha a linha de produtos e a cor perfeita para seu projeto. Nossos especialistas analisarão sua solicitação e enviarão um orçamento detalhado em até 48 horas.
             </p>
           </div>
 
@@ -174,8 +282,9 @@ export default function OrcamentoInterativo() {
                   <button
                     key={key}
                     onClick={() => {
-                      setSelectedLine(key as "perfetta" | "acm" | "aluminio");
+                      setSelectedLine(key as "perfetta" | "gold" | "portas" | "brise");
                       setSelectedColor(undefined);
+                      setValue("productLine", key);
                     }}
                     className={`w-full p-6 rounded-xl border-2 transition-all text-left ${
                       selectedLine === key
@@ -213,6 +322,16 @@ export default function OrcamentoInterativo() {
                 selectedColor={selectedColor}
               />
 
+              {/* Visualizador de Cores com Imagem de Casa */}
+              {selectedColor && (
+                <div className="mt-8">
+                  <ColorVisualizer 
+                    selectedColor={selectedColor}
+                    productLine={currentLine.name}
+                  />
+                </div>
+              )}
+
               {/* Form */}
               <div className="mt-12">
                 <h3 className="font-display font-bold text-2xl mb-6 text-primary">
@@ -220,6 +339,7 @@ export default function OrcamentoInterativo() {
                 </h3>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 space-y-6">
+                  {/* Dados Pessoais */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="name">Nome Completo *</Label>
@@ -245,35 +365,170 @@ export default function OrcamentoInterativo() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Telefone *</Label>
+                      <Label htmlFor="phone">WhatsApp *</Label>
                       <Input
                         id="phone"
-                        placeholder="(11) 98765-4321"
+                        placeholder="(11) 99999-9999"
                         {...register("phone")}
                         className={errors.phone ? "border-red-500" : ""}
                       />
                       {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
                     </div>
 
+                    {/* CEP */}
                     <div className="space-y-2">
-                      <Label htmlFor="line">Linha de Produto *</Label>
+                      <Label htmlFor="cep">CEP *</Label>
+                      <div className="relative">
+                        <Input
+                          id="cep"
+                          placeholder="00000-000"
+                          {...register("cep")}
+                          className={errors.cep ? "border-red-500" : ""}
+                          maxLength={9}
+                        />
+                        {isLoadingCep && (
+                          <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-pulse text-primary" />
+                        )}
+                      </div>
+                      {errors.cep && <p className="text-xs text-red-500">{errors.cep.message}</p>}
+                    </div>
+                  </div>
+
+                  {/* Endereço */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="rua">Rua *</Label>
                       <Input
-                        id="line"
-                        value={currentLine.name}
-                        disabled
-                        className="bg-gray-100"
+                        id="rua"
+                        placeholder="Nome da rua"
+                        {...register("rua")}
+                        className={errors.rua ? "border-red-500" : ""}
+                      />
+                      {errors.rua && <p className="text-xs text-red-500">{errors.rua.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="numero">Número *</Label>
+                      <Input
+                        id="numero"
+                        placeholder="123"
+                        {...register("numero")}
+                        className={errors.numero ? "border-red-500" : ""}
+                      />
+                      {errors.numero && <p className="text-xs text-red-500">{errors.numero.message}</p>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="complemento">Complemento</Label>
+                      <Input
+                        id="complemento"
+                        placeholder="Apto, bloco, etc"
+                        {...register("complemento")}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="color">Cor Selecionada *</Label>
+                      <Label htmlFor="bairro">Bairro *</Label>
                       <Input
-                        id="color"
-                        value={selectedColor?.name || ""}
-                        disabled
-                        className="bg-gray-100"
+                        id="bairro"
+                        placeholder="Bairro"
+                        {...register("bairro")}
+                        className={errors.bairro ? "border-red-500" : ""}
                       />
+                      {errors.bairro && <p className="text-xs text-red-500">{errors.bairro.message}</p>}
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cidade">Cidade *</Label>
+                      <Input
+                        id="cidade"
+                        placeholder="Cidade"
+                        {...register("cidade")}
+                        className={errors.cidade ? "border-red-500" : ""}
+                      />
+                      {errors.cidade && <p className="text-xs text-red-500">{errors.cidade.message}</p>}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="estado">Estado *</Label>
+                    <Input
+                      id="estado"
+                      placeholder="SP"
+                      {...register("estado")}
+                      className={errors.estado ? "border-red-500" : ""}
+                      maxLength={2}
+                    />
+                    {errors.estado && <p className="text-xs text-red-500">{errors.estado.message}</p>}
+                  </div>
+
+                  {/* Upload de Projetos */}
+                  <div className="space-y-2">
+                    <Label htmlFor="files">Upload de Projetos (Opcional)</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                      <input
+                        type="file"
+                        id="files"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png,.zip"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <label htmlFor="files" className="cursor-pointer">
+                        <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">
+                          Clique para fazer upload ou arraste arquivos aqui
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          PDF, JPG, PNG, ZIP (máx 10MB por arquivo)
+                        </p>
+                      </label>
+                    </div>
+
+                    {/* Lista de arquivos */}
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-2 mt-4">
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-sm">{file.name}</span>
+                              <span className="text-xs text-gray-400">
+                                ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFile(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Resumo */}
+                  <div className="bg-gray-50 rounded-lg p-6 space-y-2">
+                    <h4 className="font-bold text-sm uppercase text-gray-600 mb-3">Resumo do Orçamento</h4>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Linha:</span>
+                      <span className="font-bold text-sm">{currentLine.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Cor:</span>
+                      <span className="font-bold text-sm">{selectedColor?.name || "Não selecionada"}</span>
+                    </div>
+                    {uploadedFiles.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Arquivos:</span>
+                        <span className="font-bold text-sm">{uploadedFiles.length} arquivo(s)</span>
+                      </div>
+                    )}
                   </div>
 
                   <Button
@@ -285,41 +540,27 @@ export default function OrcamentoInterativo() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
 
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
                     <ShieldCheck className="h-4 w-4" />
-                    <span>Seus dados estão seguros conosco</span>
+                    <span>Seus dados estão 100% seguros. Não fazemos spam.</span>
                   </div>
                 </form>
               </div>
             </div>
           </div>
 
-          {/* Benefits */}
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8 border border-primary/20">
-            <h3 className="font-bold text-xl mb-6 text-primary">Por que escolher a Realiza?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex gap-4">
-                <Check className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-bold mb-1">Garantia de 10 Anos</h4>
-                  <p className="text-sm text-muted-foreground">Proteção total em todos os produtos</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <Check className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-bold mb-1">Instalação Profissional</h4>
-                  <p className="text-sm text-muted-foreground">Equipe especializada e certificada</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <Check className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-bold mb-1">Suporte Técnico 24/7</h4>
-                  <p className="text-sm text-muted-foreground">Sempre à disposição para ajudar</p>
-                </div>
-              </div>
-            </div>
+          {/* CTA WhatsApp */}
+          <div className="bg-primary/10 rounded-2xl p-8 border border-primary/20 text-center">
+            <h3 className="font-bold text-2xl mb-4 text-primary">Dúvidas? Fale com nossos especialistas</h3>
+            <p className="text-muted-foreground mb-6">
+              Nosso time está pronto para ajudar você a escolher a melhor solução para seu projeto.
+            </p>
+            <a href="https://wa.me/message/X4KQ726JGQX5B1" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white">
+                Conversar no WhatsApp
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </a>
           </div>
         </div>
       </main>
