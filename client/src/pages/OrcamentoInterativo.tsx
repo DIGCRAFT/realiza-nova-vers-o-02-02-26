@@ -112,6 +112,7 @@ export default function OrcamentoInterativo() {
   const [selectedColor, setSelectedColor] = useState<WoodColor | undefined>(undefined);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [location] = useLocation();
   const [, setLocation] = useLocation();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
@@ -128,6 +129,17 @@ export default function OrcamentoInterativo() {
       estado: "",
     }
   });
+
+  // Ler parâmetro de URL para pré-selecionar a linha
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const lineParam = searchParams.get("linha");
+    
+    if (lineParam && ["perfetta", "gold", "portas", "brise"].includes(lineParam)) {
+      setSelectedLine(lineParam as "perfetta" | "gold" | "portas" | "brise");
+      setValue("productLine", lineParam);
+    }
+  }, [setValue]);
 
   const cepValue = watch("cep");
 
@@ -269,10 +281,10 @@ export default function OrcamentoInterativo() {
             </p>
           </div>
 
-          {/* Three Column Layout */}
+          {/* Three Column Layout with Sticky Sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            {/* Left: Product Line Selection */}
-            <div>
+            {/* Left: Product Line Selection - STICKY */}
+            <div className="lg:sticky lg:top-24 lg:h-fit">
               <h3 className="font-display font-bold text-2xl mb-6 text-primary">
                 1. Escolha a Linha
               </h3>
@@ -310,7 +322,7 @@ export default function OrcamentoInterativo() {
               </div>
             </div>
 
-            {/* Center: Color Selection */}
+            {/* Center & Right: Color Selection and Form */}
             <div className="lg:col-span-2">
               <h3 className="font-display font-bold text-2xl mb-6 text-primary">
                 2. Escolha a Cor
@@ -419,16 +431,18 @@ export default function OrcamentoInterativo() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="complemento">Complemento</Label>
-                      <Input
-                        id="complemento"
-                        placeholder="Apto, bloco, etc"
-                        {...register("complemento")}
-                      />
-                    </div>
+                  {/* Complemento */}
+                  <div className="space-y-2">
+                    <Label htmlFor="complemento">Complemento</Label>
+                    <Input
+                      id="complemento"
+                      placeholder="Apto, bloco, etc"
+                      {...register("complemento")}
+                    />
+                  </div>
 
+                  {/* Bairro, Cidade, Estado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="bairro">Bairro *</Label>
                       <Input
@@ -450,55 +464,45 @@ export default function OrcamentoInterativo() {
                       />
                       {errors.cidade && <p className="text-xs text-red-500">{errors.cidade.message}</p>}
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="estado">Estado *</Label>
-                    <Input
-                      id="estado"
-                      placeholder="SP"
-                      {...register("estado")}
-                      className={errors.estado ? "border-red-500" : ""}
-                      maxLength={2}
-                    />
-                    {errors.estado && <p className="text-xs text-red-500">{errors.estado.message}</p>}
+                    <div className="space-y-2">
+                      <Label htmlFor="estado">Estado *</Label>
+                      <Input
+                        id="estado"
+                        placeholder="SP"
+                        {...register("estado")}
+                        maxLength={2}
+                        className={errors.estado ? "border-red-500" : ""}
+                      />
+                      {errors.estado && <p className="text-xs text-red-500">{errors.estado.message}</p>}
+                    </div>
                   </div>
 
                   {/* Upload de Projetos */}
                   <div className="space-y-2">
-                    <Label htmlFor="files">Upload de Projetos (Opcional)</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                    <Label htmlFor="upload">Upload de Projetos (Opcional)</Label>
+                    <label htmlFor="upload" className="flex items-center justify-center w-full p-6 border-2 border-dashed border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors">
+                      <div className="text-center">
+                        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm font-medium">Clique para fazer upload ou arraste arquivos aqui</p>
+                        <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, ZIP (máx 10MB por arquivo)</p>
+                      </div>
                       <input
+                        id="upload"
                         type="file"
-                        id="files"
                         multiple
-                        accept=".pdf,.jpg,.jpeg,.png,.zip"
                         onChange={handleFileUpload}
                         className="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png,.zip"
                       />
-                      <label htmlFor="files" className="cursor-pointer">
-                        <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600">
-                          Clique para fazer upload ou arraste arquivos aqui
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          PDF, JPG, PNG, ZIP (máx 10MB por arquivo)
-                        </p>
-                      </label>
-                    </div>
+                    </label>
 
-                    {/* Lista de arquivos */}
+                    {/* Arquivos Enviados */}
                     {uploadedFiles.length > 0 && (
-                      <div className="space-y-2 mt-4">
+                      <div className="mt-4 space-y-2">
                         {uploadedFiles.map((file, index) => (
                           <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-500" />
-                              <span className="text-sm">{file.name}</span>
-                              <span className="text-xs text-gray-400">
-                                ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                              </span>
-                            </div>
+                            <span className="text-sm text-gray-700">{file.name}</span>
                             <button
                               type="button"
                               onClick={() => removeFile(index)}
@@ -513,57 +517,54 @@ export default function OrcamentoInterativo() {
                   </div>
 
                   {/* Resumo */}
-                  <div className="bg-gray-50 rounded-lg p-6 space-y-2">
-                    <h4 className="font-bold text-sm uppercase text-gray-600 mb-3">Resumo do Orçamento</h4>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Linha:</span>
-                      <span className="font-bold text-sm">{currentLine.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Cor:</span>
-                      <span className="font-bold text-sm">{selectedColor?.name || "Não selecionada"}</span>
-                    </div>
-                    {uploadedFiles.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <h4 className="font-bold mb-4">Resumo do Orçamento</h4>
+                    <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Arquivos:</span>
-                        <span className="font-bold text-sm">{uploadedFiles.length} arquivo(s)</span>
+                        <span className="text-muted-foreground">Linha:</span>
+                        <span className="font-medium">{currentLine.name}</span>
                       </div>
-                    )}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Cor:</span>
+                        <span className="font-medium">{selectedColor?.name || "Não selecionada"}</span>
+                      </div>
+                    </div>
                   </div>
 
+                  {/* Submit Button */}
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !selectedColor}
-                    className="w-full h-12 text-lg font-bold"
+                    disabled={isSubmitting}
+                    className="w-full h-12 text-base font-bold"
                   >
                     {isSubmitting ? "Enviando..." : "Solicitar Orçamento"}
-                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
 
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>Seus dados estão 100% seguros. Não fazemos spam.</span>
-                  </div>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Seus dados estão 100% seguros. Não fazemos spam.
+                  </p>
                 </form>
               </div>
             </div>
           </div>
-
-          {/* CTA WhatsApp */}
-          <div className="bg-primary/10 rounded-2xl p-8 border border-primary/20 text-center">
-            <h3 className="font-bold text-2xl mb-4 text-primary">Dúvidas? Fale com nossos especialistas</h3>
-            <p className="text-muted-foreground mb-6">
-              Nosso time está pronto para ajudar você a escolher a melhor solução para seu projeto.
-            </p>
-            <a href="https://wa.me/message/X4KQ726JGQX5B1" target="_blank" rel="noopener noreferrer">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white">
-                Conversar no WhatsApp
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </a>
-          </div>
         </div>
       </main>
+
+      {/* Footer CTA */}
+      <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-12 border-t">
+        <div className="container text-center">
+          <h2 className="text-3xl font-bold mb-4">Dúvidas? Fale com nossos especialistas</h2>
+          <p className="text-lg mb-6 opacity-90">Nosso time está pronto para ajudar você a escolher a melhor solução para seu projeto.</p>
+          <Button
+            onClick={() => window.open("https://wa.me/5511999999999", "_blank")}
+            className="bg-white text-primary hover:bg-gray-100"
+            size="lg"
+          >
+            Conversar no WhatsApp
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
