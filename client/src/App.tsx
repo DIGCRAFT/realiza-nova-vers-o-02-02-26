@@ -23,10 +23,16 @@ function Router() {
       {/* Rotas Standalone (sem Layout padrão) */}
       <Route path="/landing" component={LandingPage} />
       <Route path="/lp-4us" component={LandingPage4Us} />
-      <Route path="/orcamento" component={OrcamentoInterativo} />
+      {/*<Route path="/orcamento" component={OrcamentoInterativo} />*/}
       <Route path="/obrigado" component={ThankYou} />
       
       {/* Rotas com Layout */}
+      <Route path="/orcamento">
+        <Layout>
+          <OrcamentoInterativo />
+        </Layout>
+      </Route>
+
       <Route path="/sobre">
         <Layout>
           <Sobre />
