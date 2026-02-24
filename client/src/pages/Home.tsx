@@ -141,6 +141,63 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Produtos / Soluções */}
+      <section className="py-24 bg-muted/30">
+        <div className="container">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-secondary font-bold tracking-widest uppercase text-xs mb-4 block">Nossas Soluções</span>
+            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 text-primary">
+              Linha Perfetta: Outro Nível
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Esqueça tudo o que você sabe sobre esquadrias. A linha Perfetta traz perfis ultra-slim, roldanas de alta performance e acabamento que beira a perfeição.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Grandes Vãos",
+                desc: "Sistemas deslizantes que integram ambientes com leveza e transparência total.",
+                img: "/images/Wfp7lFJ3pQce.jpg"
+              },
+              {
+                title: "Portas Pivotantes",
+                desc: "Imponência na entrada com portas de alumínio ripado ou liso de grandes dimensões.",
+                img: "/images/tERLcAEKObJH.jpg"
+              },
+              {
+                title: "Fachadas Glazing",
+                desc: "Pele de vidro e fachadas cortina para um visual moderno e limpo.",
+                img: "/images/uw1Ywj3ocqfn.jpg"
+              }
+            ].map((item, i) => (
+              <div key={i} className="group relative overflow-hidden rounded-xl aspect-[4/5] cursor-pointer">
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors z-10" />
+                <img
+                  src={item.img}
+                  alt={item.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
+                  <h3 className="text-white font-display font-bold text-2xl mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    {item.title}
+                  </h3>
+                  <p className="text-white/80 text-sm opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75">
+                    {item.desc}
+                  </p>
+                  <div className="mt-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
+                    <span className="text-secondary text-sm font-bold flex items-center gap-2">
+                      Saiba mais <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Produtos / Soluções - 4 Linhas */}
       <section className="py-24 bg-muted/30">
         <div className="container">
