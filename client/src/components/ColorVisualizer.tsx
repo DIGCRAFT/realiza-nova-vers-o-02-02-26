@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { WoodColor } from "@/types/products";
-import QRCode from "qrcode.react";
 
 interface ColorVisualizerProps {
   selectedColor: WoodColor | undefined;
@@ -9,35 +8,7 @@ interface ColorVisualizerProps {
 
 export default function ColorVisualizer({ selectedColor, productLine }: ColorVisualizerProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const qrRef = useRef<HTMLDivElement>(null);
-
-  // Gerar URL de compartilhamento com parâmetros
-  useEffect(() => {
-    if (selectedColor) {
-      const params = new URLSearchParams({
-        linha: productLine,
-        cor: selectedColor.name,
-        hex: selectedColor.hexCode,
-      });
-      setShareUrl(`${window.location.origin}?${params.toString()}`);
-    }
-  }, [selectedColor, productLine]);
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    alert("Link copiado para a área de transferência!");
-  };
-
-  const handleDownloadQR = () => {
-    const canvas = qrRef.current?.querySelector("canvas") as HTMLCanvasElement;
-    if (canvas) {
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `qrcode-${selectedColor?.name || "visualizador"}.png`;
-      link.click();
-    }
-  };
+  const [isExpandedModalOpen, setIsExpandedModalOpen] = useState(false);
 
   // Calcular cor RGB a partir do hex
   const hexToRgb = (hex: string) => {
@@ -51,10 +22,9 @@ export default function ColorVisualizer({ selectedColor, productLine }: ColorVis
       : { r: 0, g: 0, b: 0 };
   };
 
-  const colorRgb = selectedColor ? hexToRgb(selectedColor.hexCode) : { r: 128, g: 128, b: 128 };
-  const colorString = `rgb(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b})`;
+  const colorRgb = selectedColor?.hexCode ? hexToRgb(selectedColor.hexCode as string) : { r: 128, g: 128, b: 128 };
 
-  // Gerar ripas com variação de brilho (veios de madeira)
+  // Gerar ripas com variação de brilho usando textura da imagem
   const generateRipas = () => {
     const ripas = [];
     const numberOfRipas = 24;
@@ -64,35 +34,20 @@ export default function ColorVisualizer({ selectedColor, productLine }: ColorVis
       const variation = Math.sin(i * 0.5) * 0.15 + 0.1;
       const brightness = 1 + variation;
 
-      // Aplicar variação de brilho à cor
-      const adjustedR = Math.min(255, Math.round(colorRgb.r * brightness));
-      const adjustedG = Math.min(255, Math.round(colorRgb.g * brightness));
-      const adjustedB = Math.min(255, Math.round(colorRgb.b * brightness));
-
       ripas.push(
         <div
           key={i}
           className="flex-1 relative overflow-hidden"
           style={{
-            backgroundColor: `rgb(${adjustedR}, ${adjustedG}, ${adjustedB})`,
+            backgroundImage: selectedColor?.imageName
+              ? `url(/images/${selectedColor.imageName})`
+              : `linear-gradient(rgb(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}), rgb(${colorRgb.r}, ${colorRgb.g}, ${colorRgb.b}))`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             boxShadow: `inset -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 0 rgba(255, 255, 255, 0.1)`,
+            filter: `brightness(${brightness})`,
           }}
-        >
-          {/* Padrão de veios de madeira */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 0, 0, ${0.05 + Math.random() * 0.05}) 2px,
-                rgba(0, 0, 0, ${0.05 + Math.random() * 0.05}) 4px
-              )`,
-              backgroundSize: `100% 100%`,
-            }}
-          />
-        </div>
+        />
       );
     }
     return ripas;
@@ -154,33 +109,6 @@ export default function ColorVisualizer({ selectedColor, productLine }: ColorVis
               </button>
             </div>
 
-            {/* QR Code */}
-            <div className="bg-gray-100 p-4 rounded-lg mb-4 flex justify-center">
-              <div ref={qrRef}>
-                <QRCode value={shareUrl} size={200} level="H" includeMargin={true} />
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-600 text-center mb-4">
-              Digitalize o código QR para visualizar em seu dispositivo móvel.
-            </p>
-
-            {/* Botões de Ação */}
-            <div className="space-y-3">
-              <button
-                onClick={handleCopyLink}
-                className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
-              >
-                Copiar Link
-              </button>
-              <button
-                onClick={handleDownloadQR}
-                className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm"
-              >
-                Baixar QR Code
-              </button>
-            </div>
-
             {/* Informações da Cor */}
             {selectedColor && (
               <div className="mt-4 pt-4 border-t border-gray-200">
@@ -196,44 +124,65 @@ export default function ColorVisualizer({ selectedColor, productLine }: ColorVis
         </div>
       )}
 
-      {/* Visualizador de Ripas */}
-      <div className="relative aspect-video bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden border border-gray-800">
-        {/* Ripas Verticais */}
-        <div className="flex h-full w-full gap-0.5 p-4 bg-black">
-          {selectedColor ? (
-            generateRipas()
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500">
-              <div className="text-center">
-                <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                  />
-                </svg>
-                <p className="text-sm">Selecione uma cor para visualizar</p>
+      {/* Visualizador de Ripas + Referência */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
+        <div className="relative lg:col-span-7 aspect-video bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden border border-gray-800">
+          {/* Ripas Verticais */}
+          <div className="flex h-full w-full gap-0.5 p-4 bg-black">
+            {selectedColor ? (
+              generateRipas()
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                <div className="text-center">
+                  <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                    />
+                  </svg>
+                  <p className="text-sm">Selecione uma cor para visualizar</p>
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Informações da Cor (Canto Inferior Direito) */}
+          {selectedColor && (
+            <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-gray-700">
+              <p className="text-xs font-bold text-gray-300 mb-1">ACABAMENTO</p>
+              <p className="text-sm font-semibold text-white">{selectedColor.name}</p>
+              <p className="text-xs text-gray-400">{selectedColor.hexCode}</p>
             </div>
+          )}
+
+          {/* Ícone de Expansão */}
+          {selectedColor && (
+            <button
+              onClick={() => setIsExpandedModalOpen(true)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 p-2 rounded-lg transition-colors"
+              title="Expandir visualização"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                />
+              </svg>
+            </button>
           )}
         </div>
 
-        {/* Informações da Cor (Canto Inferior Direito) */}
-        {selectedColor && (
-          <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-gray-700">
-            <p className="text-xs font-bold text-gray-300 mb-1">ACABAMENTO</p>
-            <p className="text-sm font-semibold text-white">{selectedColor.name}</p>
-            <p className="text-xs text-gray-400">{selectedColor.hexCode}</p>
-          </div>
-        )}
-
-        {/* Ícone de Expansão */}
-        <button className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 p-2 rounded-lg transition-colors">
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6v4m12 0h4v-4m0 12h-4v4m4-4v4h4" />
-          </svg>
-        </button>
+        <div className="lg:col-span-3 rounded-lg overflow-hidden border border-gray-200 bg-white min-h-[180px]">
+          <img
+            src={`/images/${selectedColor?.imageName}`}
+            alt="Referência de cor cerejeira escura"
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
 
       <p className="text-xs text-muted-foreground mt-3 text-center">
@@ -249,6 +198,43 @@ export default function ColorVisualizer({ selectedColor, productLine }: ColorVis
               : "projetos modernos e minimalistas"}
             .
           </p>
+        </div>
+      )}
+
+      {/* Modal de Expansão */}
+      {isExpandedModalOpen && selectedColor && (
+        <div
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
+          onClick={() => setIsExpandedModalOpen(false)}
+        >
+          <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
+            {/* Botão de Fechar */}
+            <button
+              onClick={() => setIsExpandedModalOpen(false)}
+              className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors z-10"
+              title="Fechar"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Visualizador Expandido */}
+            <div
+              className="relative w-full aspect-video bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden border border-gray-700"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Ripas Verticais */}
+              <div className="flex h-full w-full gap-0.5 p-8 bg-black">{generateRipas()}</div>
+
+              {/* Informações da Cor */}
+              <div className="absolute bottom-6 right-6 bg-black/90 backdrop-blur-sm px-4 py-3 rounded-lg shadow-2xl border border-gray-600">
+                <p className="text-xs font-bold text-gray-300 mb-1">ACABAMENTO</p>
+                <p className="text-lg font-semibold text-white">{selectedColor.name}</p>
+                <p className="text-sm text-gray-400">{selectedColor.hexCode}</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
