@@ -141,56 +141,80 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Produtos / Soluções */}
+      {/* Produtos / Soluções - 4 Linhas */}
       <section className="py-24 bg-muted/30">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-secondary font-bold tracking-widest uppercase text-xs mb-4 block">Nossas Soluções</span>
+            <span className="text-secondary font-bold tracking-widest uppercase text-xs mb-4 block">Nossas Linhas</span>
             <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 text-primary">
-              Linha Perfetta: Outro Nível
+              Escolha a Solução Perfeita
             </h2>
             <p className="text-muted-foreground text-lg">
-              Esqueça tudo o que você sabe sobre esquadrias. A linha Perfetta traz perfis ultra-slim, roldanas de alta performance e acabamento que beira a perfeição.
+              Cada linha foi desenvolvida para atender diferentes necessidades e orçamentos. Explore nossas opções e encontre a ideal para seu projeto.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: "Grandes Vãos",
-                desc: "Sistemas deslizantes que integram ambientes com leveza e transparência total.",
-                img: "/images/Wfp7lFJ3pQce.jpg"
+                id: "perfetta",
+                title: "Perfetta™",
+                badge: "Premium",
+                badgeColor: "bg-primary",
+                desc: "Design minimalista invisível, isolamento acústico absoluto e vedação hermética.",
+                features: ["Perfis ultra-slim", "Isolamento acústico", "Acabamento perfeito"]
               },
               {
-                title: "Portas Pivotantes",
-                desc: "Imponência na entrada com portas de alumínio ripado ou liso de grandes dimensões.",
-                img: "/images/tERLcAEKObJH.jpg"
+                id: "gold",
+                title: "Gold",
+                badge: "Intermediária",
+                badgeColor: "bg-amber-600",
+                desc: "Qualidade superior com excelente custo-benefício para projetos residenciais.",
+                features: ["Ótima qualidade", "Bom custo-benefício", "Durável"]
               },
               {
-                title: "Fachadas Glazing",
-                desc: "Pele de vidro e fachadas cortina para um visual moderno e limpo.",
-                img: "/images/uw1Ywj3ocqfn.jpg"
+                id: "portas",
+                title: "Portas de Entrada",
+                badge: "Especial",
+                badgeColor: "bg-blue-600",
+                desc: "Portas pivotantes e de entrada em alumínio de alto padrão.",
+                features: ["Portas pivotantes", "Alto padrão", "Segurança"]
+              },
+              {
+                id: "brise",
+                title: "Brise/Painéis",
+                badge: "Decorativo",
+                badgeColor: "bg-green-600",
+                desc: "Brises e painéis decorativos para fachadas modernas.",
+                features: ["Estética moderna", "Funcionalidade", "Customizável"]
               }
-            ].map((item, i) => (
-              <div key={i} className="group relative overflow-hidden rounded-xl aspect-[4/5] cursor-pointer">
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors z-10" />
-                <img 
-                  src={item.img} 
-                  alt={item.title} 
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
-                  <h3 className="text-white font-display font-bold text-2xl mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    {item.title}
-                  </h3>
-                  <p className="text-white/80 text-sm opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75">
-                    {item.desc}
-                  </p>
-                  <div className="mt-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
-                    <span className="text-secondary text-sm font-bold flex items-center gap-2">
-                      Saiba mais <ArrowRight className="w-4 h-4" />
+            ].map((line) => (
+              <div key={line.id} className="bg-white rounded-xl border border-border/50 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-display font-bold text-xl text-primary">{line.title}</h3>
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold text-white ${line.badgeColor}`}>
+                      {line.badge}
                     </span>
                   </div>
+                  
+                  <p className="text-sm text-muted-foreground">{line.desc}</p>
+                  
+                  <ul className="space-y-2">
+                    {line.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm">
+                        <Check className="w-4 h-4 text-secondary" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Link href={`/orcamento?linha=${line.id}`}>
+                    <Button className="w-full mt-4" variant="outline">
+                      Orçar Agora
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}
