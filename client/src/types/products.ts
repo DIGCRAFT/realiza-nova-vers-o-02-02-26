@@ -2,7 +2,7 @@
  * Tipos e interfaces para linhas de produtos
  */
 
-export type ProductLine = "suprema" | "gold" | "perfetta" | "acm" | "aluminio" | "portas" | "brise";
+export type ProductLine = string;
 
 export interface WoodColor {
   id: string;
