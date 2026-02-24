@@ -2,14 +2,14 @@
  * Tipos e interfaces para linhas de produtos
  */
 
-export type ProductLine = "suprema" | "gold" | "perfetta" | "acm" | "aluminio";
+export type ProductLine = "suprema" | "gold" | "perfetta" | "acm" | "aluminio" | "portas" | "brise";
 
 export interface WoodColor {
   id: string;
   name: string;
-  hexCode: string;
-  imageUrl?: string;
-  category: "wood" | "solid";
+  hexCode?: string;
+  imageName?: string;
+  category: string;
 }
 
 export interface ProductLineConfig {

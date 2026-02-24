@@ -93,10 +93,20 @@ export default function ColorSelector({
           <div className="space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
             <div className="text-sm font-semibold text-slate-700">Cor Selecionada:</div>
             <div className="flex items-center gap-4">
-              <div
-                className="h-20 w-20 rounded-lg border-2 border-slate-200 shadow-md transition-transform hover:scale-105"
-                style={{ backgroundColor: selectedColor.hexCode }}
-              />
+              <div className="h-20 w-20 rounded-full border-2 border-slate-200 shadow-md transition-transform hover:scale-105 overflow-hidden">
+                {selectedColor.imageName ? (
+                  <img
+                    src={`/images/${selectedColor.imageName}`}
+                    alt={selectedColor.name}
+                    className="h-full w-full object-cover object-top scale-[1.35] origin-top"
+                  />
+                ) : (
+                  <div
+                    className="h-full w-full"
+                    style={{ backgroundColor: selectedColor.hexCode }}
+                  />
+                )}
+              </div>
               <div className="flex-1">
                 <p className="text-lg font-bold text-slate-900">{selectedColor.name}</p>
                 <p className="text-sm text-slate-600">{selectedColor.hexCode}</p>
@@ -125,28 +135,42 @@ function ColorCard({ color, isSelected, onSelect }: ColorCardProps) {
   return (
     <button
       onClick={onSelect}
-      className={`group relative flex flex-col items-center gap-2 rounded-lg p-2 transition-all duration-200 ${
-        isSelected
-          ? "ring-2 ring-primary ring-offset-2"
-          : "hover:ring-2 hover:ring-primary/50 hover:ring-offset-1"
-      }`}
+      className="group relative flex flex-col items-center gap-2 rounded-lg p-1.5 transition-transform duration-200 hover:scale-[1.02]"
       title={color.name}
     >
       {/* Amostra de cor */}
       <div
-        className="h-16 w-full rounded-md border-2 border-slate-200 shadow-sm transition-transform group-hover:scale-105"
-        style={{ backgroundColor: color.hexCode }}
-      />
+        className={`relative mx-auto h-14 w-14 overflow-hidden rounded-full border-2 shadow-sm transition-all ${
+          isSelected ? "border-[#f18a1b]" : "border-slate-200"
+        }`}
+      >
+        {color.imageName ? (
+          <img
+            src={`/images/${color.imageName}`}
+            alt={color.name}
+            className="h-full w-full object-cover object-top scale-[1.35] origin-top"
+          />
+        ) : (
+          <div
+            className="h-full w-full"
+            style={{ backgroundColor: color.hexCode }}
+          />
+        )}
+      </div>
 
       {/* Checkmark se selecionado */}
       {isSelected && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/20">
-          <Check className="h-6 w-6 text-white drop-shadow-lg" />
+        <div className="absolute left-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#f18a1b] text-white shadow">
+          <Check className="h-3.5 w-3.5" />
         </div>
       )}
 
       {/* Nome da cor */}
-      <span className="text-center text-xs font-medium text-slate-700 line-clamp-2">
+      <span
+        className={`min-h-8 text-center text-[10px] font-bold leading-4 uppercase tracking-[0.01em] sm:text-[11px] ${
+          isSelected ? "text-[#f18a1b]" : "text-slate-900"
+        }`}
+      >
         {color.name}
       </span>
     </button>
