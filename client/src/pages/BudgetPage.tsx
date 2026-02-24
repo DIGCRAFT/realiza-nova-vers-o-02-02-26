@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -26,7 +32,7 @@ const budgetFormSchema = z.object({
   name: z.string().min(2, "Nome é obrigatório"),
   email: z.string().email("E-mail inválido"),
   phone: z.string().min(10, "Telefone inválido"),
-  productLine: z.enum(["suprema", "gold", "perfetta", "acm", "aluminio"] as const),
+  productLine: z.string().min(1, "Selecione uma linha"),
   message: z.string().optional(),
 });
 
@@ -38,7 +44,13 @@ export default function BudgetPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<BudgetFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<BudgetFormData>({
     resolver: zodResolver(budgetFormSchema),
     defaultValues: {
       productLine: "perfetta",
@@ -46,10 +58,15 @@ export default function BudgetPage() {
   });
 
   const currentLine = PRODUCT_LINES[selectedLine];
-  const watchedLine = watch("productLine") as ProductLine;
+  const watchedLine = watch("productLine") as unknown as ProductLine;
 
   React.useEffect(() => {
-    setSelectedLine(watchedLine);
+    // se o form trouxer algo inesperado, não deixa selectedLine ficar inválida
+    if (watchedLine && watchedLine in PRODUCT_LINES) {
+      setSelectedLine(watchedLine);
+    } else {
+      setSelectedLine("perfetta");
+    }
     setSelectedColor(undefined);
   }, [watchedLine]);
 
@@ -62,28 +79,30 @@ export default function BudgetPage() {
     setIsSubmitting(true);
 
     try {
-      // Simular envio para WhatsApp
-      const message = `
-*Solicitação de Orçamento - Realiza Alumínio*
-
-*Dados do Cliente:*
-Nome: ${data.name}
-Email: ${data.email}
-Telefone: ${data.phone}
-
-*Produto:*
-Linha: ${currentLine.displayName}
-Cor Selecionada: ${selectedColor.name} (${selectedColor.hexCode})
-
-${data.message ? `*Observações:*\n${data.message}` : ""}
-
-Clique no link para responder: https://wa.me/seu-numero
-      `.trim();
+      //       // Simular envio para WhatsApp
+      //       const message = `
+      // *Solicitação de Orçamento - Realiza Alumínio*
+      //
+      // *Dados do Cliente:*
+      // Nome: ${data.name}
+      // Email: ${data.email}
+      // Telefone: ${data.phone}
+      //
+      // *Produto:*
+      // Linha: ${currentLine.displayName}
+      // Cor Selecionada: ${selectedColor.name} (${selectedColor.hexCode})
+      //
+      // ${data.message ? `*Observações:*\n${data.message}` : ""}
+      //
+      // Clique no link para responder: https://wa.me/seu-numero
+      //       `.trim();
 
       // Aqui você pode integrar com a API do WhatsApp ou enviar email
       console.log("Orçamento enviado:", { ...data, selectedColor });
-      
-      toast.success("Orçamento enviado com sucesso! Entraremos em contato em breve.");
+
+      toast.success(
+        "Orçamento enviado com sucesso! Entraremos em contato em breve."
+      );
       setSubmitted(true);
 
       // Reset form após 2 segundos
@@ -104,7 +123,9 @@ Clique no link para responder: https://wa.me/seu-numero
       {/* Header */}
       <header className="border-b border-slate-200 bg-white py-6 sticky top-0 z-40">
         <div className="container">
-          <h1 className="text-3xl font-bold text-slate-900">Solicitar Orçamento</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            Solicitar Orçamento
+          </h1>
           <p className="mt-2 text-slate-600">
             Escolha a linha de produto, selecione a cor e envie sua solicitação
           </p>
@@ -119,30 +140,42 @@ Clique no link para responder: https://wa.me/seu-numero
             <Card>
               <CardHeader>
                 <CardTitle>1. Escolha a Linha de Produto</CardTitle>
-                <CardDescription>Selecione a linha que melhor atende suas necessidades</CardDescription>
+                <CardDescription>
+                  Selecione a linha que melhor atende suas necessidades
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="product-line" className="text-base font-semibold">
+                    <Label
+                      htmlFor="product-line"
+                      className="text-base font-semibold"
+                    >
                       Linha de Produto
                     </Label>
                     <Select
                       value={selectedLine}
-                      onValueChange={(value) => {
-                        setSelectedLine(value as ProductLine);
-                        setValue("productLine", value as ProductLine);
+                      onValueChange={value => {
+                        setSelectedLine(value as unknown as ProductLine);
+                        setValue("productLine", value);
                       }}
                     >
-                      <SelectTrigger id="product-line" className="mt-2 text-base">
+                      <SelectTrigger
+                        id="product-line"
+                        className="mt-2 text-base"
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(PRODUCT_LINES).map(([key, line]) => (
                           <SelectItem key={key} value={key}>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">{line.displayName}</span>
-                              <span className="text-xs text-slate-500">({line.name})</span>
+                              <span className="font-semibold">
+                                {line.displayName}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                ({line.name})
+                              </span>
                             </div>
                           </SelectItem>
                         ))}
@@ -152,7 +185,9 @@ Clique no link para responder: https://wa.me/seu-numero
 
                   {/* Descrição da linha */}
                   <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
-                    <p className="text-sm text-slate-700">{currentLine.description}</p>
+                    <p className="text-sm text-slate-700">
+                      {currentLine.description}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -169,7 +204,9 @@ Clique no link para responder: https://wa.me/seu-numero
             <Card>
               <CardHeader>
                 <CardTitle>2. Seus Dados</CardTitle>
-                <CardDescription>Preencha seus dados para receber o orçamento</CardDescription>
+                <CardDescription>
+                  Preencha seus dados para receber o orçamento
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -181,7 +218,11 @@ Clique no link para responder: https://wa.me/seu-numero
                       {...register("name")}
                       className={errors.name ? "border-red-500" : ""}
                     />
-                    {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.name.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -193,7 +234,11 @@ Clique no link para responder: https://wa.me/seu-numero
                       {...register("email")}
                       className={errors.email ? "border-red-500" : ""}
                     />
-                    {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -204,11 +249,17 @@ Clique no link para responder: https://wa.me/seu-numero
                       {...register("phone")}
                       className={errors.phone ? "border-red-500" : ""}
                     />
-                    {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
+                    {errors.phone && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.phone.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <Label htmlFor="message">Mensagem Adicional (Opcional)</Label>
+                    <Label htmlFor="message">
+                      Mensagem Adicional (Opcional)
+                    </Label>
                     <Textarea
                       id="message"
                       placeholder="Descreva seu projeto, quantidade, prazos, etc."
@@ -247,21 +298,31 @@ Clique no link para responder: https://wa.me/seu-numero
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase">Linha Selecionada</p>
-                  <p className="mt-1 text-lg font-bold text-slate-900">{currentLine.displayName}</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase">
+                    Linha Selecionada
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-slate-900">
+                    {currentLine.displayName}
+                  </p>
                 </div>
 
                 {selectedColor && (
                   <div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase">Cor Selecionada</p>
+                    <p className="text-xs font-semibold text-slate-500 uppercase">
+                      Cor Selecionada
+                    </p>
                     <div className="mt-2 flex items-center gap-3">
                       <div
                         className="h-12 w-12 rounded-lg border-2 border-slate-200 shadow-sm"
                         style={{ backgroundColor: selectedColor.hexCode }}
                       />
                       <div>
-                        <p className="font-semibold text-slate-900">{selectedColor.name}</p>
-                        <p className="text-xs text-slate-500">{selectedColor.hexCode}</p>
+                        <p className="font-semibold text-slate-900">
+                          {selectedColor.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {selectedColor.hexCode}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -280,12 +341,19 @@ Clique no link para responder: https://wa.me/seu-numero
             {selectedLine === "aluminio" && (
               <div className="rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1">
-                  <span className="text-xs font-bold text-amber-700">EXCLUSIVO</span>
+                  <span className="text-xs font-bold text-amber-700">
+                    EXCLUSIVO
+                  </span>
                 </div>
-                <h3 className="font-bold text-amber-900">Receba um Bônus Especial!</h3>
+                <h3 className="font-bold text-amber-900">
+                  Receba um Bônus Especial!
+                </h3>
                 <p className="mt-2 text-sm text-amber-800">
-                  Ao solicitar orçamento pela linha Alumínio, você recebe nosso guia exclusivo:
-                  <strong className="block mt-2">"Erros que Economizam Milhares"</strong>
+                  Ao solicitar orçamento pela linha Alumínio, você recebe nosso
+                  guia exclusivo:
+                  <strong className="block mt-2">
+                    "Erros que Economizam Milhares"
+                  </strong>
                 </p>
               </div>
             )}
