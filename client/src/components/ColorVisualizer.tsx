@@ -73,24 +73,6 @@ export default function ColorVisualizer({ selectedColor, productLine }: ColorVis
           </svg>
           Visualize Sua Escolha
         </h4>
-
-        {/* Botão de Compartilhamento */}
-        {selectedColor && (
-          <button
-            onClick={() => setIsShareModalOpen(true)}
-            className="absolute top-4 right-4 bg-neutral-100 p-2 rounded-full hover:bg-neutral-200 z-10 transition-colors"
-            title="Compartilhar visualização"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C9.589 12.938 10 12.052 10 11.11V5a2 2 0 00-2-2H5a2 2 0 00-2 2v.159V5a2 2 0 00-2 2v6a2 2 0 002 2h.159m15.716-1.084a1.5 1.5 0 002.121 0l2.121-2.121a1.5 1.5 0 00-2.121-2.121L15 10.879m0 0l2.121-2.121a1.5 1.5 0 10-2.121-2.121L13 8.758"
-              />
-            </svg>
-          </button>
-        )}
       </div>
 
       {/* Modal de Compartilhamento */}
