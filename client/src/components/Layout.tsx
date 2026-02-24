@@ -28,6 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: "Sobre", href: "/sobre" },
     { name: "Projetos", href: "/projetos" },
     { name: "Contato", href: "/contato" },
+    { name: "Orçamentos", href: "/orcamento" },
   ];
 
   return (
@@ -219,26 +220,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
           
           {/* Área de Demonstração - Apenas para visualização do cliente */}
-          <div className="mt-8 pt-4 border-t border-white/5 text-center">
-            <p className="text-secondary/60 text-[10px] uppercase tracking-widest mb-2">Menu de Demonstração (Links Rápidos)</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/landing">
-                <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Landing Page (Padrão)</span>
-              </Link>
-              <Link href="/lp-4us">
-                <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Landing Page (4Us)</span>
-              </Link>
-              <Link href="/guia-perffeta">
-                <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Guia PERFFETA</span>
-              </Link>
-              <Link href="/guia-esquadrias">
-                <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Guia 7 Erros</span>
-              </Link>
-              <Link href="/obrigado">
-                <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Página de Obrigado</span>
-              </Link>
-            </div>
-          </div>
+          {/*<div className="mt-8 pt-4 border-t border-white/5 text-center">*/}
+          {/*  <p className="text-secondary/60 text-[10px] uppercase tracking-widest mb-2">Menu de Demonstração (Links Rápidos)</p>*/}
+          {/*  <div className="flex flex-wrap justify-center gap-4">*/}
+          {/*    <Link href="/landing">*/}
+          {/*      <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Landing Page (Padrão)</span>*/}
+          {/*    </Link>*/}
+          {/*    <Link href="/lp-4us">*/}
+          {/*      <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Landing Page (4Us)</span>*/}
+          {/*    </Link>*/}
+          {/*    <Link href="/guia-perffeta">*/}
+          {/*      <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Guia PERFFETA</span>*/}
+          {/*    </Link>*/}
+          {/*    <Link href="/guia-esquadrias">*/}
+          {/*      <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Guia 7 Erros</span>*/}
+          {/*    </Link>*/}
+          {/*    <Link href="/obrigado">*/}
+          {/*      <span className="text-white/60 hover:text-secondary text-xs cursor-pointer border border-white/10 px-2 py-1 rounded">Ver Página de Obrigado</span>*/}
+          {/*    </Link>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
         </div>
       </footer>
     </div>
